@@ -2,12 +2,12 @@
 extern crate serde_derive;
 extern crate toml;
 
-mod config;
-mod help;
+mod api;
+mod commands;
 
 use std::env;
 
-const ARGS: [(&str, &Fn(&[String])); 2] = [("config", &config::exec), ("help", &help::exec)];
+const ARGS: [(&str, &Fn(&[String])); 2] = [("config", &commands::config::exec), ("help", &commands::help::exec)];
 
 fn main() {
 	let args: Vec<String> = env::args().collect();	

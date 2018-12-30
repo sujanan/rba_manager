@@ -3,9 +3,12 @@ extern crate serde;
 
 use std::env;
 use std::fs;
+use std::io;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
 use std::collections::HashMap;
+
+use super::super::api::{ApiConfig, Credentials};
 
 pub fn exec(args: &[String]) {
 	let dirname = ".rba_manager";
@@ -43,4 +46,27 @@ fn config_dir_path(dirname: &str) -> PathBuf {
 			}
 		}
 	}
+}
+
+impl ApiConfig {
+
+	fn credentials(&mut self, credentials: Option<Credentials>) -> &mut ApiConfig {
+		self.credentials = credentials.or_else(|| {
+			let mut username = prompt("username");
+			let mut password = prompt("password");
+			Some(Credentials {username, password})
+		});
+		self
+	}
+
+	fn url_params(&mut self, url_params: Option<Vec<String>>) -> &mut ApiConfig {
+		self
+	}
+}
+
+fn prompt(s: &str) -> String {
+	let mut input = String::new();
+	print!("{}: ", s);
+	io::stdin().read_line(&mut input).expect("error: read_line failed");
+	input
 }
