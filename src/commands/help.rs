@@ -1,2 +1,1 @@
-pub fn exec(args: &[String]) {
-}
+pub fn exec(args: &[String]) {}
