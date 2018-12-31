@@ -6,9 +6,10 @@ use std::env;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io;
+use std::io::Write;
 use std::path::PathBuf;
 
-use super::super::api::{ApiConfig, Credentials};
+use super::super::api::*;
 
 pub fn exec(args: &[String]) {
     let dirname = ".rba_manager";
@@ -37,6 +38,8 @@ pub fn exec(args: &[String]) {
                 error
             );
         });
+
+    let config = build_config();
 }
 
 fn config_dir_path(dirname: &str) -> PathBuf {
@@ -62,11 +65,27 @@ fn config_dir_path(dirname: &str) -> PathBuf {
     }
 }
 
+fn build_config() -> ApiConfig {
+    let mut config = ApiConfig::new();
+
+    config
+        .add(|| Endpoint {
+            value: prompt("endpoint"),
+        })
+        .add(|| Credentials {
+            username: prompt("username"),
+            password: prompt("password"),
+        });
+    config
+}
+
 fn prompt(s: &str) -> String {
     let mut input = String::new();
     print!("{}: ", s);
+    io::stdout().flush();
     io::stdin()
         .read_line(&mut input)
         .expect("error: read_line failed");
+    input.pop();
     input
 }

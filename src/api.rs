@@ -1,35 +1,42 @@
+#[derive(Debug)]
 pub struct Endpoint {
-    value: String,
+    pub value: String,
 }
 
+#[derive(Debug)]
 pub struct Credentials {
-    username: String,
-    password: String,
+    pub username: String,
+    pub password: String,
 }
 
+#[derive(Debug)]
 pub struct Headers {
-    value: Vec<String>,
+    pub value: Vec<String>,
 }
 
+#[derive(Debug)]
 pub struct ContentType {
-    value: String,
+    pub value: String,
 }
 
+#[derive(Debug)]
 pub struct Body {
-    value: String,
+    pub value: String,
 }
 
+#[derive(Debug)]
 pub struct StatusCode {
-    value: u32,
+    pub value: u32,
 }
 
+#[derive(Debug)]
 pub struct Risk {
-    min: u32,
-    max: u32,
+    pub min: u32,
+    pub max: u32,
 }
 
+#[derive(Debug)]
 pub struct ApiConfig {
-    name: String,
     endpoint: Option<Endpoint>,
     credentials: Option<Credentials>,
     headers: Option<Headers>,
@@ -39,13 +46,13 @@ pub struct ApiConfig {
     risk: Option<Risk>,
 }
 
-trait Validator {
+pub trait Validator {
     fn validate(&self) -> Result<(), &str> {
         Ok(())
     }
 }
 
-trait ApiConfigBuilder {
+pub trait ApiConfigBuilder {
     fn drown(self, a: &mut ApiConfig);
 }
 
@@ -63,16 +70,39 @@ impl ApiConfigBuilder for Endpoint {
     }
 }
 
-impl Credentials {
-    pub fn new(username: String, password: String) -> Credentials {
-        Credentials { username, password }
+impl ApiConfigBuilder for Credentials {
+    fn drown(self, a: &mut ApiConfig) {
+        a.credentials = Some(self);
+    }
+}
+
+impl ApiConfigBuilder for Headers {
+    fn drown(self, a: &mut ApiConfig) {
+        a.headers = Some(self);
+    }
+}
+
+impl ApiConfigBuilder for Body {
+    fn drown(self, a: &mut ApiConfig) {
+        a.body = Some(self);
+    }
+}
+
+impl ApiConfigBuilder for StatusCode {
+    fn drown(self, a: &mut ApiConfig) {
+        a.status_code = Some(self);
+    }
+}
+
+impl ApiConfigBuilder for Risk {
+    fn drown(self, a: &mut ApiConfig) {
+        a.risk = Some(self);
     }
 }
 
 impl ApiConfig {
-    pub fn new(name: String) -> ApiConfig {
+    pub fn new() -> ApiConfig {
         ApiConfig {
-            name,
             endpoint: None,
             credentials: None,
             headers: None,
@@ -83,11 +113,15 @@ impl ApiConfig {
         }
     }
 
-    pub fn add<F, T: Validator + ApiConfigBuilder>(&mut self, func: &F) -> &mut ApiConfig
+    pub fn add<F, T: Validator + ApiConfigBuilder>(&mut self, func: F) -> &mut ApiConfig
     where
         F: Fn() -> T,
     {
-        func().drown(self);
+        let rv = func();
+        rv.validate().map_err(|error| {
+            panic!("error: 'ApiConfig' failed to invalid property: {}", error);
+        });
+        rv.drown(self);
         self
     }
 }
