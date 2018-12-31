@@ -62,21 +62,6 @@ fn config_dir_path(dirname: &str) -> PathBuf {
     }
 }
 
-impl ApiConfig {
-    fn credentials(&mut self, credentials: Option<Credentials>) -> &mut ApiConfig {
-        self.credentials = credentials.or_else(|| {
-            let mut username = prompt("username");
-            let mut password = prompt("password");
-            Some(Credentials { username, password })
-        });
-        self
-    }
-
-    fn url_params(&mut self, url_params: Option<Vec<String>>) -> &mut ApiConfig {
-        self
-    }
-}
-
 fn prompt(s: &str) -> String {
     let mut input = String::new();
     print!("{}: ", s);

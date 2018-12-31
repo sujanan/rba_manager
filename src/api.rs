@@ -1,38 +1,93 @@
+pub struct Endpoint {
+    value: String,
+}
+
 pub struct Credentials {
-    pub username: String,
-    pub password: String,
+    username: String,
+    password: String,
+}
+
+pub struct Headers {
+    value: Vec<String>,
+}
+
+pub struct ContentType {
+    value: String,
+}
+
+pub struct Body {
+    value: String,
+}
+
+pub struct StatusCode {
+    value: u32,
+}
+
+pub struct Risk {
+    min: u32,
+    max: u32,
 }
 
 pub struct ApiConfig {
-    pub endpoint: String,
-    pub credentials: Option<Credentials>,
-    pub url_params: Option<Vec<String>>,
-    pub headers: Option<Vec<String>>,
-    pub content_type: Option<String>,
-    pub body: Option<String>,
-    pub status_code: Option<u32>,
-    pub risk_max: Option<u32>,
-    pub risk_min: Option<u32>,
+    name: String,
+    endpoint: Option<Endpoint>,
+    credentials: Option<Credentials>,
+    headers: Option<Headers>,
+    content_type: Option<ContentType>,
+    body: Option<Body>,
+    status_code: Option<StatusCode>,
+    risk: Option<Risk>,
+}
+
+trait Validator {
+    fn validate(&self) -> Result<(), &str> {
+        Ok(())
+    }
+}
+
+trait ApiConfigBuilder {
+    fn drown(self, a: &mut ApiConfig);
+}
+
+impl Validator for Endpoint {}
+impl Validator for Credentials {}
+impl Validator for Headers {}
+impl Validator for ContentType {}
+impl Validator for Body {}
+impl Validator for StatusCode {}
+impl Validator for Risk {}
+
+impl ApiConfigBuilder for Endpoint {
+    fn drown(self, a: &mut ApiConfig) {
+        a.endpoint = Some(self);
+    }
 }
 
 impl Credentials {
-    pub fn from(username: String, password: String) -> Credentials {
+    pub fn new(username: String, password: String) -> Credentials {
         Credentials { username, password }
     }
 }
 
 impl ApiConfig {
-    pub fn from(endpoint: String) -> ApiConfig {
+    pub fn new(name: String) -> ApiConfig {
         ApiConfig {
-            endpoint,
+            name,
+            endpoint: None,
             credentials: None,
-            url_params: None,
             headers: None,
             content_type: None,
             body: None,
             status_code: None,
-            risk_min: None,
-            risk_max: None,
+            risk: None,
         }
+    }
+
+    pub fn add<F, T: Validator + ApiConfigBuilder>(&mut self, func: &F) -> &mut ApiConfig
+    where
+        F: Fn() -> T,
+    {
+        func().drown(self);
+        self
     }
 }
