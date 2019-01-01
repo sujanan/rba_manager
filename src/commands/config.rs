@@ -1,5 +1,6 @@
 extern crate dirs;
 extern crate serde;
+extern crate ctrlc;
 
 use std::collections::HashMap;
 use std::env;
@@ -39,7 +40,16 @@ pub fn exec(args: &[String]) {
             );
         });
 
-    let config = build_config();
+    let mut configs: HashMap<String, ApiConfig> = HashMap::new();
+    let name = prompt("name: ");
+
+    println!("{:=<1$}", "", name.len());
+    println!("{}", &name);
+    println!("{:=<1$}", "", name.len());
+    println!("");
+    configs.insert(name, build_config());
+    let toml = toml::to_string(&configs).unwrap();
+    println!("\n\n{}", &toml);
 }
 
 fn config_dir_path(dirname: &str) -> PathBuf {

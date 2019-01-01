@@ -1,41 +1,41 @@
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Endpoint {
     pub value: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Credentials {
     pub username: String,
     pub password: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Headers {
     pub value: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ContentType {
     pub value: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Body {
     pub value: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct StatusCode {
     pub value: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Risk {
     pub min: u32,
     pub max: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ApiConfig {
     endpoint: Option<Endpoint>,
     credentials: Option<Credentials>,
