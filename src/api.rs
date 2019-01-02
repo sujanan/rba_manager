@@ -76,6 +76,11 @@ impl ApiConfigBuilder for Credentials {
     }
 }
 
+impl ApiConfigBuilder for ContentType {
+    fn drown(self, a: &mut ApiConfig) {
+        a.content_type = Some(self);
+    }
+}
 impl ApiConfigBuilder for Headers {
     fn drown(self, a: &mut ApiConfig) {
         a.headers = Some(self);

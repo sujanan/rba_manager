@@ -1,6 +1,6 @@
+extern crate ctrlc;
 extern crate dirs;
 extern crate serde;
-extern crate ctrlc;
 
 use std::collections::HashMap;
 use std::env;
@@ -14,7 +14,7 @@ use super::super::api::*;
 
 pub fn exec(args: &[String]) {
     let dirname = ".rba_manager";
-    let filename = "config";
+    let filename = "config.toml";
     let mut config_path = config_dir_path(dirname);
 
     if !config_path.exists() {
@@ -29,7 +29,7 @@ pub fn exec(args: &[String]) {
 
     config_path.push(filename);
     let mut file = OpenOptions::new()
-        .write(true)
+        .append(true)
         .create(true)
         .open(config_path.as_path())
         .unwrap_or_else(|error| {
@@ -40,16 +40,7 @@ pub fn exec(args: &[String]) {
             );
         });
 
-    let mut configs: HashMap<String, ApiConfig> = HashMap::new();
-    let name = prompt("name: ");
-
-    println!("{:=<1$}", "", name.len());
-    println!("{}", &name);
-    println!("{:=<1$}", "", name.len());
-    println!("");
-    configs.insert(name, build_config());
-    let toml = toml::to_string(&configs).unwrap();
-    println!("\n\n{}", &toml);
+    toml_append_loop(&mut file);
 }
 
 fn config_dir_path(dirname: &str) -> PathBuf {
@@ -85,8 +76,40 @@ fn build_config() -> ApiConfig {
         .add(|| Credentials {
             username: prompt("username"),
             password: prompt("password"),
+        })
+        .add(|| ContentType {
+            value: prompt("content-type"),
+        })
+        .add(|| Body {
+            value: prompt("body"),
+        })
+        .add(|| StatusCode {
+            value: u32_only_prompt("status_code"),
         });
     config
+}
+
+fn u32_only_prompt(s: &str) -> u32 {
+    loop {
+        return match prompt(s).parse::<u32>() {
+            Ok(val) => val,
+            Err(err) => {
+                eprintln!("error: not a u32 value: {}", err);
+                continue;
+            }
+        };
+    }
+}
+
+fn toml_append_loop(toml: &mut fs::File) {
+    let mut configs: HashMap<String, ApiConfig> = HashMap::new();
+    loop {
+        let name = prompt("name");
+        banner(&name);
+        configs.insert(name, build_config());
+        let as_toml = toml::to_string(&configs).unwrap() + "\n";
+        toml.write_all(as_toml.as_bytes());
+    }
 }
 
 fn prompt(s: &str) -> String {
@@ -98,4 +121,11 @@ fn prompt(s: &str) -> String {
         .expect("error: read_line failed");
     input.pop();
     input
+}
+
+fn banner(s: &str) {
+    println!("{:=<1$}", "", s.len());
+    println!("{}", &s);
+    println!("{:=<1$}", "", s.len());
+    println!("");
 }
